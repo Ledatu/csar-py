@@ -73,11 +73,26 @@ async def test_upstream_503_without_csar_status_is_returned(sleeper: Sleeper) ->
 
 @pytest.mark.parametrize("status", ["circuit_open", "circuit_half_open"])
 async def test_server_circuit_raises_immediately(sleeper: Sleeper, status: str) -> None:
-    recorder = Recorder([httpx.Response(503, headers={"X-CSAR-Status": status})])
+    recorder = Recorder(
+        [httpx.Response(503, headers={"X-CSAR-Status": status, "Retry-After": "30"})]
+    )
     async with _client(recorder, sleeper) as client:
         with pytest.raises(CsarCircuitBrokenError) as exc_info:
             await client.get(URL)
     assert exc_info.value.source == "server"
+    assert exc_info.value.retry_after == 30.0
+    assert len(recorder.requests) == 1
+
+
+@pytest.mark.parametrize("status", ["throttle_unavailable", "cache_coalesce_wait_timeout"])
+async def test_non_backpressure_statuses_are_returned(sleeper: Sleeper, status: str) -> None:
+    body = {"code": "throttle_unavailable", "status": 503, "message": "rate limiter unavailable"}
+    recorder = Recorder([httpx.Response(503, headers={"X-CSAR-Status": status}, json=body)])
+    async with _client(recorder, sleeper) as client:
+        response = await client.get(URL)
+    assert response.status_code == 503
+    assert response.headers["X-CSAR-Status"] == status
+    assert sleeper.calls == []
     assert len(recorder.requests) == 1
 
 

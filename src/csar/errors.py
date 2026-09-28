@@ -23,9 +23,16 @@ class CsarBackpressureError(CsarError):
 
 
 class CsarCircuitBrokenError(CsarError):
-    def __init__(self, message: str, *, source: Literal["server", "client"]) -> None:
+    def __init__(
+        self,
+        message: str,
+        *,
+        source: Literal["server", "client"],
+        retry_after: float | None = None,
+    ) -> None:
         super().__init__(message)
         self.source: Literal["server", "client"] = source
+        self.retry_after = retry_after
 
 
 class CsarAuthError(CsarError):

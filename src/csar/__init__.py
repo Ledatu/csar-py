@@ -20,6 +20,7 @@ from .constants import (
     STATUS_BACKPRESSURE,
     STATUS_CIRCUIT_HALF_OPEN,
     STATUS_CIRCUIT_OPEN,
+    STATUS_THROTTLE_UNAVAILABLE,
     STATUS_THROTTLED,
 )
 from .dedup import RequestDeduplicator
@@ -52,7 +53,7 @@ from .pipeline import (
 )
 from .trace import generate_request_id, generate_traceparent
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "BACKPRESSURE_STATUS",
@@ -68,6 +69,7 @@ __all__ = [
     "STATUS_BACKPRESSURE",
     "STATUS_CIRCUIT_HALF_OPEN",
     "STATUS_CIRCUIT_OPEN",
+    "STATUS_THROTTLE_UNAVAILABLE",
     "STATUS_THROTTLED",
     "ApiError",
     "AuthErrorCode",

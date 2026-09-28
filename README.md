@@ -19,7 +19,7 @@ retries, and stops early when the router reports an open circuit.
 ## Install
 
 ```bash
-pip install "csar-py @ https://github.com/Ledatu/csar-py/releases/download/v0.1.0/csar_py-0.1.0-py3-none-any.whl"
+pip install "csar-py @ https://github.com/Ledatu/csar-py/releases/download/v0.1.1/csar_py-0.1.1-py3-none-any.whl"
 ```
 
 Python 3.10+, `httpx` and `cryptography` are the only dependencies.
@@ -78,7 +78,8 @@ tokens = csar.TokenManager(key, sts_endpoint="https://auth.example.com/sts/token
 |---|---|
 | `503` + `X-CSAR-Status: throttled` / `backpressure` | waits and retries; wait = `X-CSAR-Wait-MS`, else `Retry-After`, else body `retry_after_ms`, else 1 s |
 | wait > `max_wait`, or more than `max_retries` retries | raises `CsarBackpressureError` (`requested_wait`, `attempt`) |
-| `503` + `X-CSAR-Status: circuit_open` / `circuit_half_open` | raises `CsarCircuitBrokenError(source="server")` at once |
+| `503` + `X-CSAR-Status: circuit_open` / `circuit_half_open` | raises `CsarCircuitBrokenError(source="server", retry_after=…)` at once |
+| `503` + any other `X-CSAR-Status` (e.g. `throttle_unavailable`: the router's rate-limit backend is down) | returned unchanged — not a rate limit, so the SDK does not back off |
 | `503` without `X-CSAR-Status` | returned unchanged — an upstream failure, not a router condition |
 | `401` | refreshes the STS token and retries once |
 | `X-CSAR-Protocol-Version` > 1 | logs a warning |
@@ -112,9 +113,11 @@ transport = csar.CsarTransport(max_wait=5, max_retries=3, middlewares=[upstream_
 
 ## Differences from csar-ts
 
-- A `503` without `X-CSAR-Status` is returned to the caller instead of being
-  retried, as the protocol specification requires; csar-ts predates the
-  specification and treats it as throttled.
+- Only `throttled` and `backpressure` are waited out. A `503` without
+  `X-CSAR-Status`, or with a status the SDK cannot classify (such as
+  `throttle_unavailable`), is returned to the caller as the protocol
+  specification requires; csar-ts predates the specification and treats every
+  non-circuit `503` as throttled.
 - `backpressure` is a recognised `X-CSAR-Status` value, and the error body's
   `retry_after_ms` is used when neither header carries a wait.
 - Deduplication keys include a hash of the request's `Authorization` header, so

@@ -19,6 +19,7 @@ from .constants import (
     HEADER_WAIT_MS,
     LEGACY_CIRCUIT_BODY_MARKER,
     PROTOCOL_VERSION,
+    RETRYABLE_STATUSES,
 )
 from .dedup import RequestDeduplicator
 from .errors import CsarBackpressureError, CsarCircuitBrokenError
@@ -133,8 +134,9 @@ def retry_middleware(
                 raise CsarCircuitBrokenError(
                     f"server circuit breaker is {status or 'open'} for {request.url}",
                     source="server",
+                    retry_after=wait_time(response.headers)[0],
                 )
-            if status is None:
+            if status not in RETRYABLE_STATUSES:
                 return response
 
             attempt += 1

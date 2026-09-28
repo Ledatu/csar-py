@@ -45,6 +45,12 @@ def test_api_error_envelope_is_recognised() -> None:
         "throttled", 503, 2.5, "r1", "queue timeout")
 
 
+def test_throttle_unavailable_envelope_is_recognised() -> None:
+    body = b'{"code":"throttle_unavailable","status":503,"message":"rate limiter unavailable"}'
+    err = parse_api_error(503, body)
+    assert err is not None and err.code == "throttle_unavailable" and err.retry_after is None
+
+
 def test_upstream_bodies_are_not_mistaken_for_router_errors() -> None:
     wb = b'{"title":"too many requests","status":429,"statusText":"Too Many Requests","code":"x"}'
     assert parse_api_error(429, wb) is None
