@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "csar-py"
+dynamic = ["version"]
+description = "Python SDK for the CSAR API router: cooperative backpressure, STS auth, client circuit breaking and request deduplication for httpx — a port of csar-ts"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{ name = "Ledatu" }]
+keywords = ["csar", "httpx", "rate-limiting", "backpressure", "circuit-breaker", "retry", "sts", "jwt"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Framework :: AsyncIO",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Internet :: WWW/HTTP",
+  "Typing :: Typed",
+]
+dependencies = [
+  "httpx>=0.25",
+  "cryptography>=41",
+]
+
+[project.urls]
+Repository = "https://github.com/Ledatu/csar-py"
+Router = "https://github.com/Ledatu/csar"
+"TypeScript SDK" = "https://github.com/Ledatu/csar-ts"
+
+[dependency-groups]
+dev = [
+  "pytest>=8",
+  "pytest-asyncio>=0.24",
+  "ruff>=0.6",
+  "mypy>=1.11",
+]
+
+[tool.hatch.version]
+path = "src/csar/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/csar"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+files = ["src/csar"]
