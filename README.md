@@ -22,7 +22,7 @@ retries, and stops early when the router reports an open circuit.
 pip install "csar-py @ https://github.com/Ledatu/csar-py/releases/download/v0.1.1/csar_py-0.1.1-py3-none-any.whl"
 ```
 
-Python 3.10+, `httpx` and `cryptography` are the only dependencies.
+Python 3.10+, `httpx>=0.28.1` and `cryptography>=50.0.0` are required.
 
 ## Quick start
 
